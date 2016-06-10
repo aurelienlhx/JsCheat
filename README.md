@@ -1,0 +1,2 @@
+# JsCheat
+Js usefull snippets
