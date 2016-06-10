@@ -45,7 +45,7 @@
   } else if(typeof module === "object" && module.exports) { /*CommonsJS*/ module.exports = factory();
   } else { /*Browser globals*/ var module = factory(root);root[module.className] = module; }
 
-})( this, function(){
+})( this, function(root){
 
     //Class definition part
      var _class = function YourSingletonClassName(){
@@ -86,4 +86,30 @@
 
      return _singleton;
  });
+
+/**
+ *  Simple singleton class
+ */
+(function (root, factory) {
+  
+  if(typeof define === "function" && define.amd) { /*AMD*/ define(factory);
+  } else if(typeof module === "object" && module.exports) { /*CommonsJS*/ module.exports = factory();
+  } else { /*Browser globals*/ root = factory(root); }
+
+})( this, function(root){
+
+    //private property
+    var privateProperty = 'foo';
+    
+    //private method
+    var privateMethod = function(){}
+
+    return {
+        //public property
+        publicProperty:'foo',
+
+        //public method
+        publicMethod:function(){}
+    };
+});
 
