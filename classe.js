@@ -6,7 +6,7 @@
   
   if(typeof define === "function" && define.amd) { /*AMD*/ define(factory);
   } else if(typeof module === "object" && module.exports) { /*CommonsJS*/ module.exports = factory();
-  } else { /*Browser globals*/ var module = factory();root[module.name] = module;}
+  } else { /*Browser globals*/ var module = factory(root);root[module.name] = module;}
 
 })( this, function(root){
 
@@ -43,8 +43,7 @@
   
   if(typeof define === "function" && define.amd) { /*AMD*/ define(factory);
   } else if(typeof module === "object" && module.exports) { /*CommonsJS*/ module.exports = factory();
-  } else { /*Browser globals*/ var module = factory();
-    root[module.className] = module; }
+  } else { /*Browser globals*/ var module = factory(root);root[module.className] = module; }
 
 })( this, function(){
 
