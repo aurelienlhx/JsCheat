@@ -11,6 +11,13 @@
 })( this, function(root){
 
     var _class = function YourClassName(){
+      
+      //Prevent to call the class directly as a function without new keyword  
+      if(!(this instanceof YourClassName){
+          //Do what you want as
+           return new YourClassName();
+        }
+      
         //public property
         this.publicProperty = 'foo';
     };
