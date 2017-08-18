@@ -8,7 +8,7 @@
 (function($){
 	$(document).ready(function(){
 		
-		if('placeholder' in  document.createElement('input'))
+		if(!('placeholder' in  document.createElement('input'))))
 		{
 			$("input[type=text],textarea").each(function(i){
 				var placeholder = $(this).attr("placeholder") || false;
