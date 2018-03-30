@@ -1,0 +1,43 @@
+/**
+ * base
+ */
+.selectstyle{
+	cursor:pointer;
+}
+
+.selectstyle+select{
+	display:none;
+}
+
+.selectstyle__select{
+	position:relative;
+}
+.selectstyle__trigger{
+	padding:10px;
+	border:1px solid #ccc;
+}
+.selectstyle__placeholder{
+
+}
+.selectstyle__selected{
+
+}
+.selectstyle__list{
+	display:none;
+	position:absolute;
+	margin-top:-1px;
+	top:100%;
+	left:0;
+	right:0;
+	z-index:1;
+	border:1px solid #ccc;
+	background-color:#fff;
+}
+.selectstyle.is-open .selectstyle__list{
+	display:block;
+}
+
+.selectstyle__option{
+	padding:10px;
+	cursor:pointer;
+}
