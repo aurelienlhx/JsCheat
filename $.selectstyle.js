@@ -80,7 +80,7 @@ var selectStyle = (function(){
 
 	function buildSelect(){
 		var $select = $(template_select);
-		copyAttributes(this.original,$select[0]);
+		copyAttributes(this.original,$select[0],["id"]);
 		return $select;
 	}
 
