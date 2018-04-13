@@ -1,3 +1,6 @@
+(function($){
+
+
 jQuery.fn.selectstyle = function(){
 
 	return $(this).each(function(){
@@ -8,6 +11,7 @@ jQuery.fn.selectstyle = function(){
 		var placeholder = $(this).attr('data-selectstyle-placeholder') || '';
 		var select = new selectStyle(this,ns,placeholder);
 
+		$(this).data('selectstyle',select);
 		select.$element.insertBefore(this);
 		select.$element.trigger('ready');
 
@@ -27,6 +31,7 @@ var selectStyle = (function(){
 		var self=this;
 		this.placeholder = placeholder;
 		this.ns = ns;
+		this.disabled=false;
 
 		template_select='<div class="selectstyle__select'+(ns?' '+ns+'__select':'')+'"></div>';
 		template_trigger = '<div class="selectstyle__trigger'+(ns?' '+ns+'__trigger':'')+'"></div>';
@@ -38,17 +43,28 @@ var selectStyle = (function(){
 		this.original = original;
 		this.selectedIndex = this.original.selectedIndex;
 
-		this.$element=$('<div class="selectstyle'+(ns?' '+ns:'')+'" tabindex=""></div>');
+		this.$element=$('<div class="selectstyle'+(ns?' '+ns:'')+'" tabindex="-1"></div>');
 		this.$element.on('trigger:click',function(){
+			if(self.disabled)
+				return;
 			self.$element.toggleClass('is-open');
 
 		});
 		this.$element.on('option:click',function(){
 			self.close();
 		});
+
 		//blur is possible thanks to the tabindex attr
 		this.$element.on('blur',function(e){
 			self.close();
+		})
+
+		$(this.original).on('disable',function(e){
+			self.disable();
+		})
+
+		$(this.original).on('enable',function(e){
+			self.enable();
 		})
 
 		var $select = buildSelect.call(this);
@@ -172,6 +188,18 @@ var selectStyle = (function(){
 	selectStyle.prototype.open = function(){
 		this.$element.addClass('is-open');
 	}
+	selectStyle.prototype.disable = function(){
+		this.disabled = true;
+		this.$element.addClass('is-disabled');
+		$(this.original).attr('disabled','disabled');
+	}
+	selectStyle.prototype.enable = function(){
+		this.disabled = false;
+		this.$element.removeClass('is-disabled');
+		$(this.original).removeAttr('disabled');
+	}
 
 	return selectStyle;
 })()
+
+})(jQuery)
