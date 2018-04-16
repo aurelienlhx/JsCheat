@@ -4,6 +4,10 @@
 .selectstyle{
 	cursor:pointer;
 }
+.selectstyle.is-disabled{
+	background-color:#efefef;
+	cursor:not-allowed;
+}
 
 .selectstyle+select{
 	display:none;
@@ -15,6 +19,9 @@
 .selectstyle__trigger{
 	padding:10px;
 	border:1px solid #ccc;
+}
+.selectstyle.is-disabled .selectstyle__trigger{
+	cursor:not-allowed;
 }
 .selectstyle__placeholder{
 
