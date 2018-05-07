@@ -7,11 +7,12 @@ jQuery.fn.selectstyle = function(){
 		if(this.tagName !== "SELECT")
 			throw new Error('Select style enhancement must be used on a select tag only');
 
-		var ns = $(this).attr('data-selectstyle-ns') || null;
-		var placeholder = $(this).attr('data-selectstyle-placeholder') || '';
+		var $this=$(this);
+		var ns = $this.attr('data-selectstyle-ns') || null;
+		var placeholder = $this.attr('data-selectstyle-placeholder') || '';
 		var select = new selectStyle(this,ns,placeholder);
 
-		$(this).data('selectstyle',select);
+		$this.data('selectstyle',select);
 		select.$element.insertBefore(this);
 		select.$element.trigger('ready');
 
@@ -20,28 +21,34 @@ jQuery.fn.selectstyle = function(){
 
 var selectStyle = (function(){
 
-	var template_select;
-	var template_trigger;
-	var template_placeholder;
-	var template_selected;
-	var template_list;
-	var template_option;
-
 	function selectStyle(original,ns,placeholder){
 		var self=this;
 		this.placeholder = placeholder;
 		this.ns = ns;
 		this.disabled=false;
 
-		template_select='<div class="selectstyle__select'+(ns?' '+ns+'__select':'')+'"></div>';
-		template_trigger = '<div class="selectstyle__trigger'+(ns?' '+ns+'__trigger':'')+'"></div>';
-		template_placeholder = '<span class="selectstyle__placeholder'+(ns?' '+ns+'__placeholder':'')+'">&nbsp;'+placeholder+'</span>';
-		template_selected = '<span class="selectstyle__selected'+(ns?' '+ns+'__selected':'')+'"></span>';
-		template_list='<ul class="selectstyle__list'+(ns?' '+ns+'__list':'')+'"></ul>';
-		template_option='<li class="selectstyle__option'+(ns?' '+ns+'__option':'')+'"></li>';
+		this.template_select='<div class="selectstyle__select'+(ns?' '+ns+'__select':'')+'"></div>';
+		this.template_trigger = '<div class="selectstyle__trigger'+(ns?' '+ns+'__trigger':'')+'"></div>';
+		this.template_placeholder = '<span class="selectstyle__placeholder'+(ns?' '+ns+'__placeholder':'')+'">&nbsp;'+placeholder+'</span>';
+		this.template_selected = '<span class="selectstyle__selected'+(ns?' '+ns+'__selected':'')+'"></span>';
+		this.template_list='<ul class="selectstyle__list'+(ns?' '+ns+'__list':'')+'"></ul>';
+		this.template_option='<li class="selectstyle__option'+(ns?' '+ns+'__option':'')+'"></li>';
 		
 		this.original = original;
 		this.selectedIndex = this.original.selectedIndex;
+		
+		//observe changing html/option and auto update selectstyle
+		var mutationObserver = new MutationObserver(function(records,observer){
+			for (var index = 0; index < records.length; index++) {
+		    var record = records[index];
+		    if (record.type === 'childList' && record.addedNodes.length) { 
+		      hasUpdates = true;
+		      break;
+		    }
+		  }
+		  if (hasUpdates) self.update();
+		});
+		mutationObserver.observe(this.original,{childList:true,characterData:false});
 
 		this.$element=$('<div class="selectstyle'+(ns?' '+ns:'')+'" tabindex="-1"></div>');
 		this.$element.on('trigger:click',function(){
@@ -67,12 +74,7 @@ var selectStyle = (function(){
 			self.enable();
 		})
 
-		var $select = buildSelect.call(this);
-		var $trigger = buildTrigger.call(this);
-		var $list = buildList.call(this);
-		
-		$select.append($trigger).append($list);
-		this.$element.append($select);
+		build.call(this);
 
 		// this.$element.on('ready',function(){
 		// 	var maxOptionWidth=0;
@@ -92,19 +94,27 @@ var selectStyle = (function(){
 		// 	self.$element.width(maxOptionWidth || 'auto');
 		// })
 	}
-		
 
+	function build(){
+		var $select = buildSelect.call(this);
+		var $trigger = buildTrigger.call(this);
+		var $list = buildList.call(this);
+		
+		$select.append($trigger).append($list);
+		this.$element.append($select);
+	}
+		
 	function buildSelect(){
-		var $select = $(template_select);
+		var $select = $(this.template_select);
 		copyAttributes(this.original,$select[0],["id"]);
 		return $select;
 	}
 
 	function buildTrigger(){
 		var self=this;
-		var $trigger=$(template_trigger);
-		var $placeholder = $(template_placeholder);
-		var $selected = $(template_selected);
+		var $trigger=$(this.template_trigger);
+		var $placeholder = $(this.template_placeholder);
+		var $selected = $(this.template_selected);
 		
 		$trigger.on('click',function(){$trigger.trigger('trigger:click');});
 		$trigger.append($placeholder).append($selected);
@@ -121,34 +131,13 @@ var selectStyle = (function(){
 		var self=this;
 		self.$options = [];
 		var options = this.original.children;
-		var $list=$(template_list);
+		var $list=$(this.template_list);
 		for(var i=0; i<options.length;i++){
 			var option=options[i];
 			if(option.disabled)
 				continue;
 
-			var $option = $(template_option);
-			copyAttributes(option,$option[0],['name','value','selected','data-selectstyle-option']);
-
-			var custom_content = $(option).attr('data-selectstyle-option');
-			if(custom_content)
-				$option.html(custom_content);
-			else
-				$option.text(option.textContent);
-
-			(function(selectedIndex,$option){
-				$option.on('click',function(){
-					var $this = $(this);
-					if(self.$option)
-						self.$option.removeClass('is-selected');
-					self.$option = $this;
-					self.$option.addClass('is-selected');
-					self.original.selectedIndex = selectedIndex;
-					$this.trigger('option:click',[$option,selectedIndex]);
-					$(self.original).change();
-				})
-				
-			})(i,$option);
+			var $option = buildOption.call(this,option,i);
 			$list.append($option);
 
 			if(option.selected && !this.placeholder){
@@ -159,10 +148,40 @@ var selectStyle = (function(){
 					})
 				})(i,$option)
 			}
-
 			self.$options.push($option);
 		}
+
+		if(options.length==1){
+			self.$element.trigger('option:click',[$option,0]);
+		}
+
 		return $list;
+	}
+
+	function buildOption(option,num){
+		var self =this;
+
+		var $option = $(this.template_option);
+		copyAttributes(option,$option[0],['name','value','selected','data-selectstyle-option']);
+
+		var custom_content = $(option).attr('data-selectstyle-option');
+		if(custom_content)
+			$option.html(custom_content);
+		else
+			$option.text(option.textContent);
+
+		$option.on('click',function(){
+			var $this = $(this);
+			if(self.$option)
+				self.$option.removeClass('is-selected');
+			self.$option = $this;
+			self.$option.addClass('is-selected');
+			self.original.selectedIndex = num;
+			$this.trigger('option:click',[$option,num]);
+			$(self.original).change();
+		})
+
+		return $option;
 	}
 
 	function copyAttributes(from,to,except){
@@ -197,6 +216,11 @@ var selectStyle = (function(){
 		this.disabled = false;
 		this.$element.removeClass('is-disabled');
 		$(this.original).removeAttr('disabled');
+	}
+	selectStyle.prototype.update = function(){
+		this.$element.html("");
+		build.call(this);
+		this.$element.trigger('ready');
 	}
 
 	return selectStyle;
