@@ -1,6 +1,8 @@
 (function($,window,document,header){
 	$(document).ready(function(){
 		var $header = $(header);
+        if($header.length==0)
+            return;
 		var $window = $(window);
 		var start = $header.offset().top + $header.height();
 		$window.on('scroll',function(){
@@ -10,4 +12,4 @@
 				$header.removeClass('is-sticky');
 		})
 	})
-})(jQuery,window,document,'#header');
+})(jQuery,window,document,'[data-sticky=true]');
