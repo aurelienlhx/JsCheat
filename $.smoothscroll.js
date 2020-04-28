@@ -1,6 +1,6 @@
 (function($) {
   $(document).ready(function() {
-    $('a[href^="#"]').on('click', function(e) {
+    $('a[href^="#"]').not('[data-raw-hash]').on('click', function(e) {
       scrollTo(this.href, e);
     });
     if (document.location.hash && document.location.hash.indexOf("utm") == -1) {
